@@ -1,8 +1,11 @@
 ﻿using E6K_NetAng_GestContact.Api.Models.DTO;
 using E6K_NetAng_GestContact.Api.Models.Entities;
 using E6K_NetAng_GestContact.Api.Models.Forms;
+using E6K_NetAng_GestContact.Api.Models.Mappers;
 using Microsoft.AspNetCore.Mvc;
+using System.Data.Common;
 using System.Data.SqlClient;
+using Tools.Databases;
 
 namespace E6K_NetAng_GestContact.Api.Controllers
 {
@@ -15,28 +18,13 @@ namespace E6K_NetAng_GestContact.Api.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            List<Contact> contacts = new List<Contact>();
-
             using (SqlConnection dbConnection = new SqlConnection())
             {
-                dbConnection.ConnectionString = CONNECTION_STRING;                
+                dbConnection.ConnectionString = CONNECTION_STRING;
 
-                using (SqlCommand dbCommand = dbConnection.CreateCommand())
-                {
-                    dbCommand.CommandText = "SELECT Id, Nom, Prenom FROM Contact;";
-
-                    dbConnection.Open();
-                    using(SqlDataReader dbReader = dbCommand.ExecuteReader())
-                    {
-                        while(dbReader.Read())
-                        {
-                            contacts.Add(new Contact { Id = (int)dbReader["Id"], Nom = (string)dbReader["Nom"], Prenom = (string)dbReader["Prenom"] });
-                        }
-                    }
-                }
-            }
-
-            return Ok(contacts);
+                List<Contact> contacts = dbConnection.ExecuteReader("SELECT Id, Nom, Prenom FROM Contact;", (dr) => dr.ToContact()).ToList();
+                return Ok(contacts);
+            }            
         }
 
         [HttpGet("{id}")]
@@ -46,23 +34,14 @@ namespace E6K_NetAng_GestContact.Api.Controllers
             {
                 dbConnection.ConnectionString = CONNECTION_STRING;
 
-                using (SqlCommand dbCommand = dbConnection.CreateCommand())
+                Contact? contact = dbConnection.ExecuteReader("SELECT Id, Nom, Prenom FROM Contact WHERE Id = @Id;", (dr) => dr.ToContact(), parameters: new { Id = id }).SingleOrDefault();
+
+                if(contact is null)
                 {
-                    dbCommand.CommandText = "SELECT Id, Nom, Prenom FROM Contact WHERE Id = @Id;";
-                    dbCommand.Parameters.AddWithValue("Id", id);
-
-                    dbConnection.Open();
-                    using (SqlDataReader dbReader = dbCommand.ExecuteReader())
-                    {
-                        if (dbReader.Read())
-                        {
-                            Contact contact = new Contact { Id = (int)dbReader["Id"], Nom = (string)dbReader["Nom"], Prenom = (string)dbReader["Prenom"] };
-                            return Ok(contact);
-                        }
-
-                        return NotFound();
-                    }
+                    return NotFound();
                 }
+
+                return Ok(contact);
             }            
         }
 
@@ -73,20 +52,12 @@ namespace E6K_NetAng_GestContact.Api.Controllers
             {
                 dbConnection.ConnectionString = CONNECTION_STRING;
 
-                using (SqlCommand dbCommand = dbConnection.CreateCommand())
-                {
-                    dbCommand.CommandText = "INSERT INTO Contact (Nom, Prenom) VALUES (@Nom, @Prenom);";
-                    dbCommand.Parameters.AddWithValue("Nom", dto.Nom);
-                    dbCommand.Parameters.AddWithValue("Prenom", dto.Prenom);
+                int rows = dbConnection.ExecuteNonQuery("INSERT INTO Contact (Nom, Prenom) VALUES (@Nom, @Prenom);", parameters: dto);
 
-                    dbConnection.Open();
-                    int rows = dbCommand.ExecuteNonQuery();
+                if (rows == 1)
+                    return NoContent();
 
-                    if (rows == 1)
-                        return NoContent();
-
-                    return BadRequest("Something wrong...");
-                }
+                return BadRequest("Something wrong...");
             }
         }
 
@@ -98,21 +69,12 @@ namespace E6K_NetAng_GestContact.Api.Controllers
             {
                 dbConnection.ConnectionString = CONNECTION_STRING;
 
-                using (SqlCommand dbCommand = dbConnection.CreateCommand())
-                {
-                    dbCommand.CommandText = "UPDATE Contact SET Nom = @Nom, Prenom = @Prenom WHERE Id = @Id;";
-                    dbCommand.Parameters.AddWithValue("Nom", dto.Nom);
-                    dbCommand.Parameters.AddWithValue("Prenom", dto.Prenom);
-                    dbCommand.Parameters.AddWithValue("id", id);
+                int rows = dbConnection.ExecuteNonQuery("UPDATE Contact SET Nom = @Nom, Prenom = @Prenom WHERE Id = @Id;", parameters: new { id, dto.Nom, dto.Prenom });
 
-                    dbConnection.Open();
-                    int rows = dbCommand.ExecuteNonQuery();
+                if (rows == 1)
+                    return NoContent();
 
-                    if (rows == 1)
-                        return NoContent();
-
-                    return NotFound();
-                }
+                return NotFound();
             }
         }
 
@@ -123,20 +85,12 @@ namespace E6K_NetAng_GestContact.Api.Controllers
             {
                 dbConnection.ConnectionString = CONNECTION_STRING;
 
-                using (SqlCommand dbCommand = dbConnection.CreateCommand())
-                {
-                    dbCommand.CommandText = "UPDATE Contact SET Nom = @Nom WHERE Id = @Id;";
-                    dbCommand.Parameters.AddWithValue("Nom", dto.Value);
-                    dbCommand.Parameters.AddWithValue("id", id);
+                int rows = dbConnection.ExecuteNonQuery("UPDATE Contact SET Nom = @Nom WHERE Id = @Id;", parameters: new { id, Nom = dto.Value });
 
-                    dbConnection.Open();
-                    int rows = dbCommand.ExecuteNonQuery();
+                if (rows == 1)
+                    return NoContent();
 
-                    if (rows == 1)
-                        return NoContent();
-
-                    return NotFound();
-                }
+                return NotFound();
             }
         }
 
@@ -147,19 +101,12 @@ namespace E6K_NetAng_GestContact.Api.Controllers
             {
                 dbConnection.ConnectionString = CONNECTION_STRING;
 
-                using (SqlCommand dbCommand = dbConnection.CreateCommand())
-                {
-                    dbCommand.CommandText = "DELETE FROM Contact WHERE Id = @Id;";
-                    dbCommand.Parameters.AddWithValue("id", id);
+                int rows = dbConnection.ExecuteNonQuery("DELETE FROM Contact WHERE Id = @Id;", parameters: new { id });
 
-                    dbConnection.Open();
-                    int rows = dbCommand.ExecuteNonQuery();
+                if (rows == 1)
+                    return NoContent();
 
-                    if (rows == 1)
-                        return NoContent();
-
-                    return NotFound();
-                }
+                return NotFound();
             }
         }
     }
