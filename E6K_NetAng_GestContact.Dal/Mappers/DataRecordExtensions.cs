@@ -1,7 +1,7 @@
-﻿using E6K_NetAng_GestContact.Api.Models.Entities;
+﻿using E6K_NetAng_GestContact.Dal.Entities;
 using System.Data;
 
-namespace E6K_NetAng_GestContact.Api.Models.Mappers
+namespace E6K_NetAng_GestContact.Dal.Mappers
 {
     internal static class DataRecordExtensions
     {

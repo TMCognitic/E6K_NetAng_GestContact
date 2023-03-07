@@ -1,4 +1,4 @@
-﻿namespace E6K_NetAng_GestContact.Api.Models.Entities
+﻿namespace E6K_NetAng_GestContact.Dal.Entities
 {
 #nullable disable
     public class Contact

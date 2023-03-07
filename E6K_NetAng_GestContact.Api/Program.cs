@@ -1,3 +1,5 @@
+using E6K_NetAng_GestContact.Dal.Repositories;
+using E6K_NetAng_GestContact.Dal.Services;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -19,6 +21,7 @@ namespace E6K_NetAng_GestContact.Api
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddScoped<IDbConnection>((sp) => new SqlConnection(connectionString));
+            builder.Services.AddScoped<IContactRepository, ContactService>();
 
             var app = builder.Build();
 

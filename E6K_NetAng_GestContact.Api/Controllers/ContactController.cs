@@ -1,7 +1,7 @@
 ﻿using E6K_NetAng_GestContact.Api.Models.DTO;
-using E6K_NetAng_GestContact.Api.Models.Entities;
 using E6K_NetAng_GestContact.Api.Models.Forms;
-using E6K_NetAng_GestContact.Api.Models.Mappers;
+using E6K_NetAng_GestContact.Dal.Entities;
+using E6K_NetAng_GestContact.Dal.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Data.Common;
@@ -14,24 +14,26 @@ namespace E6K_NetAng_GestContact.Api.Controllers
     [Route("[controller]")]
     public class ContactController : ControllerBase
     {
-        private readonly IDbConnection _dbConnection;
+        private readonly ILogger<ContactController> _logger;
+        private readonly IContactRepository _contactRepository;
 
-        public ContactController(IDbConnection dbConnection)
+        public ContactController(ILogger<ContactController> logger, IContactRepository contactRepository)
         {
-            _dbConnection = dbConnection;
+            _logger = logger;
+            _contactRepository = contactRepository;
         }
 
         [HttpGet]
         public IActionResult Get()
         {
-            List<Contact> contacts = _dbConnection.ExecuteReader("SELECT Id, Nom, Prenom FROM Contact;", (dr) => dr.ToContact()).ToList();
-            return Ok(contacts);
+            _logger.LogError($"{DateTime.Now} : GetAll request received....");
+            return Ok(_contactRepository.Get().ToList());
         }
 
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
-            Contact? contact = _dbConnection.ExecuteReader("SELECT Id, Nom, Prenom FROM Contact WHERE Id = @Id;", (dr) => dr.ToContact(), parameters: new { Id = id }).SingleOrDefault();
+            Contact? contact = _contactRepository.Get(id);
 
             if (contact is null)
             {
@@ -44,9 +46,7 @@ namespace E6K_NetAng_GestContact.Api.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] ContactDto dto)
         {
-            int rows = _dbConnection.ExecuteNonQuery("INSERT INTO Contact (Nom, Prenom) VALUES (@Nom, @Prenom);", parameters: dto);
-
-            if (rows == 1)
+            if (_contactRepository.Insert(new Contact() { Nom = dto.Nom, Prenom = dto.Prenom}))
                 return NoContent();
 
             return BadRequest("Something wrong...");
@@ -56,9 +56,7 @@ namespace E6K_NetAng_GestContact.Api.Controllers
         [HttpPatch("{id}")]
         public IActionResult Update(int id, [FromBody] ContactDto dto)
         {
-            int rows = _dbConnection.ExecuteNonQuery("UPDATE Contact SET Nom = @Nom, Prenom = @Prenom WHERE Id = @Id;", parameters: new { id, dto.Nom, dto.Prenom });
-
-            if (rows == 1)
+            if (_contactRepository.Update(new Contact() { Id = id, Nom = dto.Nom, Prenom = dto.Prenom }))
                 return NoContent();
 
             return NotFound();
@@ -67,9 +65,7 @@ namespace E6K_NetAng_GestContact.Api.Controllers
         [HttpPatch("ChangeName/{id}")]
         public IActionResult SetName(int id, [FromBody] FullNameValue dto)
         {
-            int rows = _dbConnection.ExecuteNonQuery("UPDATE Contact SET Nom = @Nom WHERE Id = @Id;", parameters: new { id, Nom = dto.Value });
-
-            if (rows == 1)
+            if (_contactRepository.ChangeName(id, dto.Value))
                 return NoContent();
 
             return NotFound();
@@ -78,9 +74,7 @@ namespace E6K_NetAng_GestContact.Api.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            int rows = _dbConnection.ExecuteNonQuery("DELETE FROM Contact WHERE Id = @Id;", parameters: new { id });
-
-            if (rows == 1)
+            if (_contactRepository.Delete(id))
                 return NoContent();
 
             return NotFound();
