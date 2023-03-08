@@ -21,7 +21,7 @@ namespace E6K_NetAng_GestContact.Api
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddScoped<IDbConnection>((sp) => new SqlConnection(connectionString));
-            builder.Services.AddScoped<IContactRepository, ContactService>();
+            builder.Services.AddScoped<FakeContactService>();
 
             var app = builder.Build();
 

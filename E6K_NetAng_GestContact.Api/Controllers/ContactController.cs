@@ -2,6 +2,7 @@
 using E6K_NetAng_GestContact.Api.Models.Forms;
 using E6K_NetAng_GestContact.Dal.Entities;
 using E6K_NetAng_GestContact.Dal.Repositories;
+using E6K_NetAng_GestContact.Dal.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Data.Common;
@@ -15,9 +16,9 @@ namespace E6K_NetAng_GestContact.Api.Controllers
     public class ContactController : ControllerBase
     {
         private readonly ILogger<ContactController> _logger;
-        private readonly IContactRepository _contactRepository;
+        private readonly FakeContactService _contactRepository;
 
-        public ContactController(ILogger<ContactController> logger, IContactRepository contactRepository)
+        public ContactController(ILogger<ContactController> logger, FakeContactService contactRepository)
         {
             _logger = logger;
             _contactRepository = contactRepository;
