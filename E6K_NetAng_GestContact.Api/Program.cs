@@ -1,5 +1,7 @@
 using E6K_NetAng_GestContact.Dal.Repositories;
 using E6K_NetAng_GestContact.Dal.Services;
+using E6K_NetAng_GestContact.Domain;
+using E6K_NetAng_GestContact.Domain.Services;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -20,8 +22,10 @@ namespace E6K_NetAng_GestContact.Api
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddDbContext<ContactDbContext>();
+
             builder.Services.AddScoped<IDbConnection>((sp) => new SqlConnection(connectionString));
-            builder.Services.AddScoped<IContactRepository, FakeContactService>();
+            builder.Services.AddScoped<IContactRepository, EFContactService>();
 
             var app = builder.Build();
 

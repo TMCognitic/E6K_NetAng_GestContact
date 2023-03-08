@@ -27,7 +27,7 @@ namespace E6K_NetAng_GestContact.Api.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            _logger.LogError($"{DateTime.Now} : GetAll request received....");
+            _logger.LogInformation($"{DateTime.Now} : GetAll request received....");
             return Ok(_contactRepository.Get().ToList());
         }
 

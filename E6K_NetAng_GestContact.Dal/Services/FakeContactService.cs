@@ -11,7 +11,7 @@ namespace E6K_NetAng_GestContact.Dal.Services
 {
     public class FakeContactService : IContactRepository
     {
-        private static List<Contact> _items;
+        private static List<Contact>? _items;
 
         public FakeContactService()
         {
@@ -27,7 +27,7 @@ namespace E6K_NetAng_GestContact.Dal.Services
 
         public bool ChangeName(int id, string nom)
         {
-            Contact? c = _items.Where(c => c.Id == id).SingleOrDefault();
+            Contact? c = _items!.Where(c => c.Id == id).SingleOrDefault();
 
             if (c is null)
                 return false;
@@ -37,35 +37,35 @@ namespace E6K_NetAng_GestContact.Dal.Services
 
         public bool Delete(int id)
         {
-            Contact? c = _items.Where(c => c.Id == id).SingleOrDefault();
+            Contact? c = _items!.Where(c => c.Id == id).SingleOrDefault();
 
             if (c is null)
                 return false;
 
-            _items.Remove(c);
+            _items!.Remove(c);
             return true;
         }
 
         public IEnumerable<Contact> Get()
         {
-            return _items;
+            return _items!;
         }
 
         public Contact? Get(int id)
         {
-            return _items.Where(c => c.Id == id).SingleOrDefault();
+            return _items!.Where(c => c.Id == id).SingleOrDefault();
         }
 
         public bool Insert(Contact contact)
         {
-            contact.Id = (_items.Count == 0) ? 1 : _items.Max(c => c.Id) + 1;
+            contact.Id = (_items!.Count == 0) ? 1 : _items.Max(c => c.Id) + 1;
             _items.Add(contact);
             return true;
         }
 
         public bool Update(Contact contact)
         {
-            Contact? c = _items.Where(c => c.Id == contact.Id).SingleOrDefault();
+            Contact? c = _items!.Where(c => c.Id == contact.Id).SingleOrDefault();
 
             if(c is null)
                 return false;
