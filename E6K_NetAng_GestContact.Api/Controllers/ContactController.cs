@@ -16,9 +16,9 @@ namespace E6K_NetAng_GestContact.Api.Controllers
     public class ContactController : ControllerBase
     {
         private readonly ILogger<ContactController> _logger;
-        private readonly FakeContactService _contactRepository;
+        private readonly IContactRepository _contactRepository;
 
-        public ContactController(ILogger<ContactController> logger, FakeContactService contactRepository)
+        public ContactController(ILogger<ContactController> logger, IContactRepository contactRepository)
         {
             _logger = logger;
             _contactRepository = contactRepository;
